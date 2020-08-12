@@ -24,19 +24,31 @@ public class ProductsServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         switch (action != null ? action : "") {
-            case "createProduct":
+            case "create":
                 createProduct(request, response);
                 break;
-            case "editClothing":
+            case "edit":
                 editProduct(request, response);
                 break;
             case "findByPrice":
                 findByPrice(request,response);
                 break;
+            case "search":
+                searchProduct(request,response);
+                break;
             default:
                 break;
 
         }
+    }
+
+    private void searchProduct(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String name = request.getParameter("name");
+        List<Product> product = this.iProduct.searchByName(name);
+        request.setAttribute("product", product);
+        RequestDispatcher dispatcher;
+        dispatcher = request.getRequestDispatcher("listProduct/search_product.jsp");
+        dispatcher.forward(request, response);
     }
 
     private void editProduct(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -45,10 +57,11 @@ public class ProductsServlet extends HttpServlet {
         String price = request.getParameter("price");
         String number = request.getParameter("number");
         String color = request.getParameter("color");
-        String discerption = request.getParameter("discerption");
+        String description = request.getParameter("description");
+        String category = request.getParameter("category");
 
 
-        Product product = new Product(id, name,price,number,color,discerption);
+        Product product = new Product(id, name,price,number,color,description,category);
         this.iProduct.update(product);
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("listProduct/edit_product.jsp");
         requestDispatcher.forward(request, response);
@@ -59,13 +72,13 @@ public class ProductsServlet extends HttpServlet {
         String price = request.getParameter("price");
         String number = request.getParameter("number");
         String color = request.getParameter("color");
-        String discerption = request.getParameter("discerption");
+        String description = request.getParameter("description");
+        String category = request.getParameter("category");
 
-
-        Product product = new Product(name, price,number, color,discerption);
+        Product product = new Product(name, price,number, color,description,category);
         this.iProduct.insert(product);
 
-        RequestDispatcher requestDispatcher = request.getRequestDispatcher("listProduct/create_products.jsp");
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher("listProduct/create_product.jsp");
         request.setAttribute("message", "Tao moi thanh cong");
         try {
             requestDispatcher.forward(request, response);
@@ -74,47 +87,70 @@ public class ProductsServlet extends HttpServlet {
         }
     }
 
+
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        String price = request.getParameter("price");
-        if(price != null){
-            findByPrice(request, response);
-        }
+
 
         switch (action != null ? action : "") {
-            case "createClothing":
-                showCreateClothing(request, response);
+            case "create":
+                showCreateForm(request,response);
                 break;
-            case "editClothing":
-                showEditClothing(request, response);
+            case "edit":
+                showEditForm(request, response);
                 break;
             case "listProduct":
                 showProduct(request, response);
                 break;
-            case "deleteProduct":
+            case "delete":
                 deleteProduct(request, response);
+                break;
+            case "search":
+                showSearchForm(request, response);
+                break;
+            default:
+                actionList(request,response);
                 break;
         }
     }
 
+    private void showSearchForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String name = request.getParameter("name");
+
+        List<Product> product = this.iProduct.searchByName(name);
+        iProduct.searchByName(name);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("listProduct/search_product.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher("listProduct/create_product.jsp");
+        requestDispatcher.forward(request,response);
+    }
+
+    private void actionList(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.sendRedirect("/products?action=listProduct");
+    }
+
     private void findByPrice(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String price = request.getParameter("price");
-        List<Product> list = this.iProduct.findByPrice(price);
-        RequestDispatcher requestDispatcher;
-        if (list == null){
-            requestDispatcher = request.getRequestDispatcher("error-404.jsp");
-        }else {
-            request.setAttribute("product", list);
-            requestDispatcher = request.getRequestDispatcher("listProduct/list_product.jsp");
-            requestDispatcher.forward(request, response);
-        }
+//        String price = request.getParameter("price");
+//        List<Product> list = this.iProduct.findByPrice(price);
+//        RequestDispatcher requestDispatcher;
+//        if (list == null){
+//            requestDispatcher = request.getRequestDispatcher("error-404.jsp");
+//        }else {
+//            request.setAttribute("product", list);
+//            requestDispatcher = request.getRequestDispatcher("listProduct/list_product.jsp");
+//            requestDispatcher.forward(request, response);
+//        }
     }
 
     private void deleteProduct(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         this.iProduct.remove(id);
-        List<Product> clothing = this.iProduct.findAll();
-        request.setAttribute("clothing", clothing);
+        List<Product> product = this.iProduct.findAll();
+        request.setAttribute("product", product);
         RequestDispatcher requestDispatcher = request.getRequestDispatcher("listProduct/list_product.jsp");
         requestDispatcher.forward(request, response);
     }
@@ -123,11 +159,11 @@ public class ProductsServlet extends HttpServlet {
         List<Product> products = this.iProduct.findAll();
         request.setAttribute("product", products);
 
-        RequestDispatcher requestDispatcher = request.getRequestDispatcher("listClothing/list_clothing.jsp");
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher("listProduct/list_product.jsp");
         requestDispatcher.forward(request, response);
     }
 
-    private void showEditClothing(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         // trả về 1 clothing\
         Product product = this.iProduct.findById(id);
@@ -138,8 +174,4 @@ public class ProductsServlet extends HttpServlet {
         requestDispatcher.forward(request, response);
     }
 
-    private void showCreateClothing(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RequestDispatcher requestDispatcher = request.getRequestDispatcher("listClothing/create_clothing.jsp");
-        requestDispatcher.forward(request, response);
-    }
 }

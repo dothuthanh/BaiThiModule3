@@ -51,6 +51,16 @@
                 <td><input type="text" name="discerption" id="discerption"></td>
             </tr>
             <tr>
+                <td>Category : </td>
+                <%--                <td><input type="text" name="category" id="category" value="${requestScope["product"].getCategory()}">--%>
+                <td>
+                    <select name="category">
+                        <option selected >phone</option>
+                        <option>television</option>
+                    </select></td>
+
+            </tr>
+            <tr>
                 <td></td>
                 <td><input type="submit" value="Create Product"><a href="/products"></a></td>
             </tr>
